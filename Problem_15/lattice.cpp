@@ -49,7 +49,7 @@ int StringToInt(char *str) {
         *str++;
     }
 
-    while(IsDigit(*str)) {
+    while (IsDigit(*str)) {
         result = result * 10 + (*str - '0');
         *str++;
     }
@@ -73,11 +73,63 @@ void FindUniquePaths(Point *travel_node, uint64_t *path_count) {
     }
 }
 
+void FreeGrid(uint64_t **grid, int size) {
+    for (int i = 0; i < size; i++) {
+        free(grid[i]);
+    }
+    free(grid);
+}
+
+uint64_t **CountGridPaths(int grid_size) {
+    int height = grid_size;
+    int width  = grid_size;
+
+    uint64_t **grid = (uint64_t **)malloc((height + 1) * sizeof(uint64_t *));
+    if (grid == NULL) {
+        fprintf(stderr, "Failed to allocate Memory\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i <= height; i++) {
+        grid[i] = (uint64_t *)calloc((width + 1), sizeof(uint64_t));
+        if (grid[i] == NULL) {
+            fprintf(stderr, "Failed to allocate Memory\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    grid[height][width] = 1;
+
+    for (int y = height; y >= 0; y--) {
+        for (int x = width; x >= 0; x--) {
+            if (x != width || y != height) {
+                uint64_t path_right = (x == width)  ? 0 : grid[y][x+1];
+                uint64_t path_down  = (y == height) ? 0 : grid[y+1][x];
+                grid[y][x] = path_right + path_down;
+            }
+        }
+    }
+
+    //FreeGrid(grid, grid_size+1);
+
+    return grid;
+}
+
+void PrintGrid(uint64_t **grid, int size) {
+    for(int y = 0; y <= size; y++) {
+        for (int x = 0; x <= size; x++) {
+            printf("%4llu ", grid[y][x]);
+        }
+        printf("\n");
+    }
+}
+
+
 int main(int argc, char **argv) {
     if (argc == 2 && IsDigit(*argv[1])) {
 
         int grid_size = StringToInt(argv[1]);
 
+#if 0
         Point **grid = SetUpGrid(grid_size);
         Point *travel_node = grid[0];
 
@@ -87,7 +139,11 @@ int main(int argc, char **argv) {
         printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
 
         free(grid, grid_size);
+#endif
+        uint64_t **grid = CountGridPaths(grid_size);
 
+        PrintGrid(grid, grid_size);
+        //printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
     } else {
         printf("You need to pass a grid size\n");
     }
