@@ -144,6 +144,8 @@ int main(int argc, char **argv) {
 
         PrintGrid(grid, grid_size);
         //printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
+
+        FreeGrid(grid, grid_size);
     } else {
         printf("You need to pass a grid size\n");
     }
