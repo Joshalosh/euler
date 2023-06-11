@@ -3,6 +3,39 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+struct Memory_Arena {
+    char *start;
+    char *current;
+    char *end;
+};
+
+void InitArena(Memory_Arena *arena, size_t size) {
+    arena->start   = (char *)malloc(size);
+    arena->current = arena->start;
+    arena->end     = arena->start + size;
+}
+
+void *ArenaAlloc(Memory_Arena *arena, size_t size) {
+    void *result = NULL;
+    if (!(arena->current + size > arena->end)) { // Not enough space in the arena
+        result = arena->current;
+        arena->current += size;
+    }
+
+    return result;
+}
+
+void ZeroSize(size_t size, void *ptr) {
+    uint8_t *byte = (uint8_t *)ptr;
+    while(size--) {
+        *byte++ = 0;
+    }
+}
+
+void FreeArena(Memory_Arena *arena) {
+    free(arena->start);
+}
+
 struct Point {
     Point *right;
     Point *down;
