@@ -113,21 +113,20 @@ void FreeGrid(uint64_t **grid, int size) {
     free(grid);
 }
 
-uint64_t **CountGridPaths(int grid_size) {
+uint64_t **CountGridPaths(Memory_Arena *arena, int grid_size) {
     int height = grid_size;
     int width  = grid_size;
 
-    uint64_t **grid = (uint64_t **)malloc((height + 1) * sizeof(uint64_t *));
+    InitArena(arena, 1024*1024);
+
+    uint64_t **grid = (uint64_t **)ArenaAlloc(arena, (height + 1)*sizeof(uint64_t *));;
     if (grid == NULL) {
         fprintf(stderr, "Failed to allocate Memory\n");
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i <= height; i++) {
-        grid[i] = (uint64_t *)calloc((width + 1), sizeof(uint64_t));
-        if (grid[i] == NULL) {
-            fprintf(stderr, "Failed to allocate Memory\n");
-            exit(EXIT_FAILURE);
-        }
+        grid[i] = (uint64_t *)ArenaAlloc(arena, (width + 1)*sizeof(uint64_t));
+        ZeroSize(width + 1, grid[i]);
     }
 
     grid[height][width] = 1;
@@ -161,6 +160,7 @@ int main(int argc, char **argv) {
     if (argc == 2 && IsDigit(*argv[1])) {
 
         int grid_size = StringToInt(argv[1]);
+        Memory_Arena arena;
 
 #if 0
         Point **grid = SetUpGrid(grid_size);
@@ -173,12 +173,12 @@ int main(int argc, char **argv) {
 
         free(grid, grid_size);
 #endif
-        uint64_t **grid = CountGridPaths(grid_size);
+        uint64_t **grid = CountGridPaths(&arena, grid_size);
 
         PrintGrid(grid, grid_size);
         //printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
 
-        FreeGrid(grid, grid_size);
+        FreeArena(&arena);
     } else {
         printf("You need to pass a grid size\n");
     }
