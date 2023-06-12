@@ -1,153 +1,41 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
-struct Memory_Arena {
-    char *start;
-    char *current;
-    char *end;
-};
+#include "lattice.h"
 
-void InitArena(Memory_Arena *arena, size_t size) {
-    arena->start   = (char *)malloc(size);
-    arena->current = arena->start;
-    arena->end     = arena->start + size;
-}
-
-void *ArenaAlloc(Memory_Arena *arena, size_t size) {
-    void *result = NULL;
-    if (!(arena->current + size > arena->end)) { // Not enough space in the arena
-        result = arena->current;
-        arena->current += size;
-    }
-
-    return result;
-}
-
-void ZeroSize(size_t size, void *ptr) {
-    uint8_t *byte = (uint8_t *)ptr;
-    while(size--) {
-        *byte++ = 0;
-    }
-}
-
-void FreeArena(Memory_Arena *arena) {
-    free(arena->start);
-}
-
-struct Point {
-    Point *right;
-    Point *down;
-};
-
-Point **SetUpGrid(int size) {
-    int height = size + 1;
-    int width  = size + 1;
-    Point **grid = (Point **)malloc(height * sizeof(Point *));
-    for (int i = 0; i < height; i++) {
-        grid[i] = (Point *)malloc(width * sizeof(Point));
-    }
-
-    // Initialise the grid with points
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            grid[y][x].right = (x < width - 1)  ? &grid[y][x+1] : NULL;
-            grid[y][x].down  = (y < height - 1) ? &grid[y+1][x] : NULL;
-        }
-    }
-
-    return grid;
-}
-
-void FreeGrid(Point **grid, int size) {
-    int height = size + 1;
-    for (int i = 0; i < height; i++) {
-        free(grid[i]);
-    }
-    free(grid);
-}
-
-bool IsDigit(char c) {
-    bool result = (c >= '0' && c <= '9');
-    return result;
-}
-
-int StringToInt(char *str) {
-    int result = 0;
-    int sign = 1;
-    
-    if (*str == '-') {
-        sign = -1;
-        *str++;
-    }
-
-    while (IsDigit(*str)) {
-        result = result * 10 + (*str - '0');
-        *str++;
-    }
-
-    result *= sign;
-    return result;
-}
-
-void FindUniquePaths(Point *travel_node, uint64_t *path_count) {
-    if (travel_node->right == NULL && travel_node->down == NULL) {
-        (*path_count)++;
-        return;
-    }
-
-    if (travel_node->right != NULL) {
-        FindUniquePaths(travel_node->right, path_count); 
-    }
-
-    if (travel_node->down != NULL) {
-        FindUniquePaths(travel_node->down, path_count);
-    }
-}
-
-void FreeGrid(uint64_t **grid, int size) {
-    for (int i = 0; i < size; i++) {
-        free(grid[i]);
-    }
-    free(grid);
-}
-
-uint64_t **CountGridPaths(Memory_Arena *arena, int grid_size) {
-    int height = grid_size;
-    int width  = grid_size;
-
-    InitArena(arena, 1024*1024);
-
-    uint64_t **grid = (uint64_t **)ArenaAlloc(arena, (height + 1)*sizeof(uint64_t *));;
-    if (grid == NULL) {
-        fprintf(stderr, "Failed to allocate Memory\n");
-        exit(EXIT_FAILURE);
-    }
+u64 **SetGridValues(Memory_Arena *arena, s32 size) {
+    s32 height = size;
+    s32 width  = size;
+    // We need to create a grid 1 size larger than the set size
+    // to be able to flag where the edges of the grid is
+    u64 **grid = (u64 **)ArenaAlloc(arena, (height + 1) * sizeof(u64 *));
     for (int i = 0; i <= height; i++) {
-        grid[i] = (uint64_t *)ArenaAlloc(arena, (width + 1)*sizeof(uint64_t));
-        ZeroSize(width + 1, grid[i]);
+        grid[i] = (u64 *)ArenaAlloc(arena, (width + 1) * sizeof(u64)); // Adding 1 to width just like with height
+        ZeroArray(grid[i], width + 1);
     }
 
+    // Initialising the first square in the grid manually
     grid[height][width] = 1;
 
     for (int y = height; y >= 0; y--) {
         for (int x = width; x >= 0; x--) {
-            if (x != width || y != height) {
-                uint64_t path_right = (x == width)  ? 0 : grid[y][x+1];
-                uint64_t path_down  = (y == height) ? 0 : grid[y+1][x];
-                grid[y][x] = path_right + path_down;
+            // Make sure we don't iterate over the case we've
+            // already initialised
+            if (x < width || y < width) {
+                u64 right_path = (x == width)  ? 0 : grid[y][x+1];
+                u64 down_path  = (y == height) ? 0 : grid[y+1][x];
+
+                grid[y][x] = right_path + down_path;
             }
         }
     }
 
-    //FreeGrid(grid, grid_size+1);
-
     return grid;
 }
 
-void PrintGrid(uint64_t **grid, int size) {
-    for(int y = 0; y <= size; y++) {
+void PrintGrid(u64 **grid, s32 size) {
+    for (int y = 0; y <= size; y++) {
         for (int x = 0; x <= size; x++) {
             printf("%4llu ", grid[y][x]);
         }
@@ -155,32 +43,21 @@ void PrintGrid(uint64_t **grid, int size) {
     }
 }
 
-
 int main(int argc, char **argv) {
-    if (argc == 2 && IsDigit(*argv[1])) {
+    if(argc == 2) {
+        s32 grid_size = atoi(argv[1]);
+        Assert(grid_size);
 
-        int grid_size = StringToInt(argv[1]);
         Memory_Arena arena;
-
-#if 0
-        Point **grid = SetUpGrid(grid_size);
-        Point *travel_node = grid[0];
-
-        uint64_t path_count = 0;
-        FindUniquePaths(travel_node, &path_count);
-
-        printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
-
-        free(grid, grid_size);
-#endif
-        uint64_t **grid = CountGridPaths(&arena, grid_size);
+        InitArena(&arena, 1024*1024);
+        
+        u64 **grid = SetGridValues(&arena, grid_size);
 
         PrintGrid(grid, grid_size);
-        //printf("The number of unique lattice paths for a %dx%d grid is:\n%llu\n", grid_size, grid_size, path_count);
 
         FreeArena(&arena);
     } else {
-        printf("You need to pass a grid size\n");
+        printf("You need to also pass the grid size you fucking piece of shit\n");
     }
 }
 
