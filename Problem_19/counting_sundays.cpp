@@ -39,6 +39,8 @@ enum Month_Type {
     October,
     November,
     December,
+
+    Month_Count,
 };
 
 struct Day_Buffer {
@@ -58,10 +60,61 @@ struct Date {
 };
 
 static void InitDayBuffer(Date *date) {
+    if (date) {
+        Day_Buffer *head    = NULL;
+        Day_Buffer *current = NULL;
+        Day_Buffer *prev    = NULL;
+
+        for (u32 index = Monday; index < Day_Count; index++) {
+            current       = (Day_Buffer *)malloc(sizeof(Day_Buffer));
+            current->day  = (Day_Type)index;
+            current->next = NULL;
+
+            if (prev) {
+                prev->next = current;
+            } else {
+                head = current;
+            }
+
+            prev = current;
+        }
+
+        current->next = head;
+        date->date_day = head;
+    }
 }
 
 static void InitMonthBuffer(Date *date) {
+    if (date) {
+        Month_Buffer *head    = NULL;
+        Month_Buffer *current = NULL;
+        Month_Buffer *prev    = NULL;
+
+        for (u32 index = January; index < Month_Count; index++) {
+            current = (Month_Buffer *)malloc(sizeof(Month_Buffer));
+            current->month = (Month_Type)index;
+            current->next = NULL;
+
+            if (prev) {
+                prev->next = current;
+            } else {
+                head = current;
+            }
+
+            prev = current;
+        }
+
+        current->next = head;
+        date->date_month = head;
+    }
 }
 
 static void StartCalendar() {
+}
+
+int main() {
+    Date date;
+
+    InitDayBuffer(&date);
+    InitMonthBuffer(&date);
 }
