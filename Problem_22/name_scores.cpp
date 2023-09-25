@@ -1,18 +1,20 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
-struct File_Content {
+struct File_Content 
+{
     char *data;
     size_t size;
 };
 
-static FileContent ReadEntireFileAndNullTerminate(char *filename) {
-    FILE file;
+static File_Content ReadEntireFileAndNullTerminate(char *filename) 
+{
+    FILE *file = fopen(filename, "r");
     File_Content result;
 
     if (file) {
-        fopen(file, "r");
         fseek(file, 0, SEEK_END);
         result.size = ftell(file);
         fseek(file, 0, SEEK_SET);
@@ -25,4 +27,9 @@ static FileContent ReadEntireFileAndNullTerminate(char *filename) {
     }
 
     return result;
+}
+
+int main()
+{
+    File_Content file = ReadEntireFileAndNullTerminate("names.txt");
 }
