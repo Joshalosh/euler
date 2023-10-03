@@ -25,8 +25,40 @@ static File_Content ReadEntireFileAndNullTerminate(char *filename)
 
         result.data[result.size] = '\0';
     }
-
     return result;
+}
+
+static bool IsEndOfLine(char c) 
+{
+    bool   result = (c == '\n' || c == '\r');
+    return result;
+}
+
+static bool IsWhitespace(char c) 
+{
+    bool   result = (c == ' ' || c == '\t' || c == '\v' || c == '\f' || IsEndOfLine(c));
+    return result;
+}
+
+static bool IsAlpha(char c) 
+{
+    bool   result = ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+    return result;
+}
+
+static bool IsNumber(char c) 
+{
+    bool   result = (c >= '0' && c <= '9');
+    return result;
+}
+
+static void EatAllWhitespace(char *stream)
+{
+    while (stream[0]) {
+        if (IsWhitespace(stream[0])) {
+            stream++;
+        }
+    }
 }
 
 int main()
