@@ -57,6 +57,19 @@ static void EatAllWhitespace(char *stream)
     while (stream[0]) {
         if (IsWhitespace(stream[0])) {
             stream++;
+        } else if (stream[0] == '/' && stream[1] == '/') {
+            while (stream[0] && !IsEndOfLine(stream[0])) {
+                stream++;
+            }
+        } else if (stream[0] == '/' && stream[1] && stream[1] == '*') {
+            while (stream[0] && stream[0] != '*' && stream[1] != '/') {
+                stream++;
+            }
+            if (stream[0] == '*') {
+                stream += 2;
+            }
+        } else {
+            break;
         }
     }
 }
