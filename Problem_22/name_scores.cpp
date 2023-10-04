@@ -3,16 +3,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
-struct File_Content 
-{
-    char *data;
-    size_t size;
-};
+#include "name_scores.h"
 
 static File_Content ReadEntireFileAndNullTerminate(char *filename) 
 {
     FILE *file = fopen(filename, "r");
-    File_Content result;
+    File_Content result = {};
 
     if (file) {
         fseek(file, 0, SEEK_END);
@@ -20,10 +16,18 @@ static File_Content ReadEntireFileAndNullTerminate(char *filename)
         fseek(file, 0, SEEK_SET);
 
         result.data = (char *)malloc(result.size + 1);
-        fread(result.data, result.size, 1, file);
-        fclose(file);
 
-        result.data[result.size] = '\0';
+        if (result.data) {
+            fread(result.data, result.size, 1, file);
+            fclose(file);
+
+            result.data[result.size] = '\0';
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            fclose(file);
+        }
+    } else {
+        fprintf(stderr, "Failed to open file\n");
     }
     return result;
 }
@@ -52,8 +56,10 @@ static bool IsNumber(char c)
     return result;
 }
 
-static void EatAllWhitespace(char *stream)
+static void EatAllWhitespace(Tokeniser *tokeniser)
 {
+    char *stream = tokeniser->at;
+
     while (stream[0]) {
         if (IsWhitespace(stream[0])) {
             stream++;
@@ -61,8 +67,8 @@ static void EatAllWhitespace(char *stream)
             while (stream[0] && !IsEndOfLine(stream[0])) {
                 stream++;
             }
-        } else if (stream[0] == '/' && stream[1] && stream[1] == '*') {
-            while (stream[0] && stream[0] != '*' && stream[1] != '/') {
+        } else if (stream[0] == '/' && stream[1] == '*') {
+            while (stream[0] && !(stream[0] == '*' && stream[1] == '/')) {
                 stream++;
             }
             if (stream[0] == '*') {
@@ -72,6 +78,13 @@ static void EatAllWhitespace(char *stream)
             break;
         }
     }
+
+    tokeniser->at = stream;
+}
+
+static Token GetToken(Tokeniser *tokeniser)
+{
+    EatAllWhitespace(tokeniser->at);
 }
 
 int main()
