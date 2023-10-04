@@ -85,6 +85,19 @@ static void EatAllWhitespace(Tokeniser *tokeniser)
 static Token GetToken(Tokeniser *tokeniser)
 {
     EatAllWhitespace(tokeniser->at);
+
+    Token token;
+    switch(tokeniser->at) {
+        case '"': {
+        tokeniser->at++;
+        token->name = tokeniser->at;
+        while (tokeniser->at != '"') {
+            tokeniser->at++;
+        }
+
+        token->name_length = tokeniser->at - token->name;
+        }
+    }
 }
 
 int main()
