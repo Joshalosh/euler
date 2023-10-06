@@ -40,7 +40,7 @@ static bool IsEndOfLine(char c)
 
 static bool IsWhitespace(char c) 
 {
-    bool   result = (c == ' ' || c == '\t' || c == '\v' || c == '\f' || IsEndOfLine(c));
+    bool   result = (c == ' ' || c == '\t' || c == '\v' || c == '\f' || c == ',' || IsEndOfLine(c));
     return result;
 }
 
@@ -82,20 +82,30 @@ static void EatAllWhitespace(Tokeniser *tokeniser)
     tokeniser->at = stream;
 }
 
-static Token GetToken(Tokeniser *tokeniser)
+Token *token_array[5000];
+
+static void GetToken(Tokeniser *tokeniser)
 {
-    EatAllWhitespace(tokeniser->at);
+    int index = 0;
+    while(tokeniser->at[0])
+    {
+        EatAllWhitespace(tokeniser);
 
-    Token token;
-    switch(tokeniser->at) {
-        case '"': {
-        tokeniser->at++;
-        token->name = tokeniser->at;
-        while (tokeniser->at != '"') {
+        Token *token = (Token *)malloc(sizeof(Token));
+        switch(tokeniser->at[0]) {
+            case '"': {
             tokeniser->at++;
-        }
+            token->name = tokeniser->at;
+            while (tokeniser->at[0] != '"') {
+                tokeniser->at++;
+            }
 
-        token->name_length = tokeniser->at - token->name;
+            token->name_length = tokeniser->at - token->name;
+
+            token_array[index] = token;
+            index++;
+            tokeniser->at++;
+            }
         }
     }
 }
@@ -103,4 +113,14 @@ static Token GetToken(Tokeniser *tokeniser)
 int main()
 {
     File_Content file = ReadEntireFileAndNullTerminate("names.txt");
+
+    Tokeniser tokeniser;
+    tokeniser.at = file.data;
+
+    GetToken(&tokeniser);
+
+    for(int i = 0; i < 10; i++)
+    {
+        printf("%.*s\n", (int)token_array[i]->name_length, token_array[i]->name);
+    }
 }
