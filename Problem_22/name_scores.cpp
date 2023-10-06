@@ -82,9 +82,7 @@ static void EatAllWhitespace(Tokeniser *tokeniser)
     tokeniser->at = stream;
 }
 
-Token *token_array[5000];
-
-static void GetToken(Tokeniser *tokeniser)
+static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
 {
     int index = 0;
     while(tokeniser->at[0])
@@ -117,9 +115,11 @@ int main()
     Tokeniser tokeniser;
     tokeniser.at = file.data;
 
-    GetToken(&tokeniser);
+    Token *token_array[5000];
 
-    for(int i = 0; i < 10; i++)
+    AddTokenToArray(&tokeniser, token_array);
+
+    for(int i = 0; i < 5000; i++)
     {
         printf("%.*s\n", (int)token_array[i]->name_length, token_array[i]->name);
     }
