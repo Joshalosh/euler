@@ -56,7 +56,7 @@ static bool IsNumber(char c)
     return result;
 }
 
-static void EatAllWhitespace(Tokeniser *tokeniser)
+static void EatWhitespaceAndComments(Tokeniser *tokeniser)
 {
     char *stream = tokeniser->at;
 
@@ -87,7 +87,7 @@ static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
     int index = 0;
     while(tokeniser->at[0])
     {
-        EatAllWhitespace(tokeniser);
+        EatWhitespaceAndComments(tokeniser);
 
         Token *token = (Token *)malloc(sizeof(Token));
         switch(tokeniser->at[0]) {
