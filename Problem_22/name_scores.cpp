@@ -108,25 +108,30 @@ static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
     }
 }
 
+#if 0
 #define MAX_ARRAY_ENTRIES 5000
+#else
+#define MAX_ARRAY_ENTRIES 15
+#endif
 
-static void BubbleSortArray(Token ***token_array)
+#if 1
+static void BubbleSortArray(Token **token_array)
 {
     for (int outer = 0; outer < MAX_ARRAY_ENTRIES; outer++) {
         for (int inner = 0; inner < MAX_ARRAY_ENTRIES; inner++) {
-            if (**token_array[inner] > **token_array[inner + 1]) {
-                Token temp = **token_array[inner];
-                token_array[inner] = **token_array[inner + 1];
-                **token_array[inner + 1] = temp;
-            } else if (**token_array[inner] == **token_array[inner + 1]) {
-                size_t smallest_length = **token_array[inner]->name_length < **token_array[inner + 1]->name_length ? **token_array[inner]->name_length : **token_array[inner + 1]->name_length;
+            if (token_array[inner]->name[0] > token_array[inner + 1]->name[0]) {
+                Token *temp = token_array[inner];
+                token_array[inner] = token_array[inner + 1];
+                token_array[inner + 1] = temp;
+            } else if (token_array[inner]->name[0] == token_array[inner + 1]->name[0]) {
+                size_t smallest_length = token_array[inner]->name_length < token_array[inner + 1]->name_length ? token_array[inner]->name_length : token_array[inner + 1]->name_length;
                 for (int current_letter = 1; current_letter < smallest_length; current_letter++) {
-                    if (*token_array[inner][current_letter] > *token_array[inner+1][current_letter]) {
-                        Token temp = **token_array[inner];
-                        token_array[inner] = **token_array[inner + 1];
-                        **token_array[inner + 1] = temp;
+                    if (token_array[inner]->name[current_letter] > token_array[inner+1]->name[current_letter]) {
+                        Token *temp = token_array[inner];
+                        token_array[inner] = token_array[inner + 1];
+                        token_array[inner + 1] = temp;
                         break;
-                    } else if (*token_array[inner][current_letter] < *token_array[inner+1][current_letter]) {
+                    } else if (token_array[inner]->name[current_letter] < token_array[inner+1]->name[current_letter]) {
                         break;
                     }
                 }
@@ -134,6 +139,7 @@ static void BubbleSortArray(Token ***token_array)
         }
     }
 }
+#endif
 
 int main()
 {
@@ -145,9 +151,14 @@ int main()
     Token *token_array[5000];
 
     AddTokenToArray(&tokeniser, token_array);
+    BubbleSortArray(token_array);
 
-    for(int i = 0; i < 5000; i++)
+    for(int i = 0; i < MAX_ARRAY_ENTRIES; i++)
     {
         printf("%.*s\n", (int)token_array[i]->name_length, token_array[i]->name);
     }
+
+    int num = 'z' + 'a';
+
+    printf("%d\n", num);
 }
