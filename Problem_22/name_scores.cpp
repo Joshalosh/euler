@@ -108,7 +108,7 @@ static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
     }
 }
 
-#if 0
+#if 1
 #define MAX_ARRAY_ENTRIES 5000
 #else
 #define MAX_ARRAY_ENTRIES 15
@@ -153,12 +153,13 @@ int main()
     AddTokenToArray(&tokeniser, token_array);
     BubbleSortArray(token_array);
 
-    for(int i = 0; i < MAX_ARRAY_ENTRIES; i++)
-    {
-        printf("%.*s\n", (int)token_array[i]->name_length, token_array[i]->name);
+    for(int i = 0; i < MAX_ARRAY_ENTRIES; i++) {
+        int num = 0;
+        if( i == 912) {
+            for(int current_letter = 0; current_letter < token_array[i]->name_length; current_letter++) {
+                num += token_array[i]->name[current_letter] - 64;
+            }
+            printf("%.*s -> %d\n", (int)token_array[i]->name_length, token_array[i]->name, num);
+        }
     }
-
-    int num = 'z' + 'a';
-
-    printf("%d\n", num);
 }
