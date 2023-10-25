@@ -82,7 +82,7 @@ static void EatWhitespaceAndComments(Tokeniser *tokeniser)
     tokeniser->at = stream;
 }
 
-static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
+static int AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
 {
     int index = 0;
     while(tokeniser->at[0])
@@ -101,24 +101,27 @@ static void AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
             token->name_length = tokeniser->at - token->name;
 
             token_array[index] = token;
+            //printf("%.*s\n", (int)token->name_length, token->name);
             index++;
             tokeniser->at++;
             }
         }
     }
+
+    return index;
 }
 
 #if 1
-#define MAX_ARRAY_ENTRIES 5000
+#define MAX_ARRAY_ENTRIES 5200
 #else
 #define MAX_ARRAY_ENTRIES 15
 #endif
 
 #if 1
-static void BubbleSortArray(Token **token_array)
+static void BubbleSortArray(Token **token_array, int token_count)
 {
-    for (int outer = 0; outer < MAX_ARRAY_ENTRIES; outer++) {
-        for (int inner = 0; inner < MAX_ARRAY_ENTRIES; inner++) {
+    for (int outer = 0; outer < token_count - 1; outer++) {
+        for (int inner = 0; inner < token_count - outer - 1; inner++) {
             if (token_array[inner]->name[0] > token_array[inner + 1]->name[0]) {
                 Token *temp = token_array[inner];
                 token_array[inner] = token_array[inner + 1];
@@ -141,6 +144,13 @@ static void BubbleSortArray(Token **token_array)
 }
 #endif
 
+static void FreeTokens(Token **token_array, int token_count)
+{
+    for(int i = 0; i < token_count; i++) {
+        free(token_array[i]);
+    }
+}
+
 int main()
 {
     File_Content file = ReadEntireFileAndNullTerminate("names.txt");
@@ -148,18 +158,24 @@ int main()
     Tokeniser tokeniser;
     tokeniser.at = file.data;
 
-    Token *token_array[5000];
+    Token *token_array[5200];
 
-    AddTokenToArray(&tokeniser, token_array);
-    BubbleSortArray(token_array);
+    long long token_count = AddTokenToArray(&tokeniser, token_array);
+    //printf("Total tokens: %d\n", token_count);
+    BubbleSortArray(token_array, token_count);
 
-    for(int i = 0; i < MAX_ARRAY_ENTRIES; i++) {
-        int num = 0;
-        if( i == 912) {
-            for(int current_letter = 0; current_letter < token_array[i]->name_length; current_letter++) {
-                num += token_array[i]->name[current_letter] - 64;
-            }
-            printf("%.*s -> %d\n", (int)token_array[i]->name_length, token_array[i]->name, num);
+    int total_score = 0;
+    for(int i = 0; i < token_count; i++) {
+        long long num = 0;
+        for(int current_letter = 0; current_letter < token_array[i]->name_length; current_letter++) {
+            num += token_array[i]->name[current_letter] - 64;
         }
+        num *= (i + 1);
+        total_score += num;
+        printf("%.*s -> %lld\n", (int)token_array[i]->name_length, token_array[i]->name, num);
     }
+
+    printf("The total score is: %d\n", total_score);
+
+    FreeTokens(token_array, token_count);
 }
