@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "name_scores.h"
 
@@ -117,7 +118,7 @@ static int AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
 #define MAX_ARRAY_ENTRIES 15
 #endif
 
-#if 1
+#if 0
 static void BubbleSortArray(Token **token_array, int token_count)
 {
     for (int outer = 0; outer < token_count - 1; outer++) {
@@ -142,6 +143,20 @@ static void BubbleSortArray(Token **token_array, int token_count)
         }
     }
 }
+#else
+static void BubbleSortArray(Token **token_array, int token_count)
+{
+    for (int outer = 0; outer < token_count - 1; outer++) {
+        for (int inner = 0; inner < token_count - outer - 1; inner++) {
+            if (strcmp(token_array[inner]->name, token_array[inner+1]->name) > 0) {
+                Token *temp          = token_array[inner];
+                token_array[inner]   = token_array[inner+1];
+                token_array[inner+1] = temp;
+            }
+        }
+    }
+}
+
 #endif
 
 static void FreeTokens(Token **token_array, int token_count)
@@ -161,6 +176,7 @@ int main()
     Token *token_array[5200];
 
     long long token_count = AddTokenToArray(&tokeniser, token_array);
+    //token_count = 15;
     //printf("Total tokens: %d\n", token_count);
     BubbleSortArray(token_array, token_count);
 
