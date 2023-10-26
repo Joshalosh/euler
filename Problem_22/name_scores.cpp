@@ -118,7 +118,7 @@ static int AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
 #define MAX_ARRAY_ENTRIES 15
 #endif
 
-#if 0
+#if 1
 static void BubbleSortArray(Token **token_array, int token_count)
 {
     for (int outer = 0; outer < token_count - 1; outer++) {
@@ -129,14 +129,25 @@ static void BubbleSortArray(Token **token_array, int token_count)
                 token_array[inner + 1] = temp;
             } else if (token_array[inner]->name[0] == token_array[inner + 1]->name[0]) {
                 size_t smallest_length = token_array[inner]->name_length < token_array[inner + 1]->name_length ? token_array[inner]->name_length : token_array[inner + 1]->name_length;
+                bool   identical_up_to_smallest_length = 1;
                 for (int current_letter = 1; current_letter < smallest_length; current_letter++) {
                     if (token_array[inner]->name[current_letter] > token_array[inner+1]->name[current_letter]) {
-                        Token *temp = token_array[inner];
-                        token_array[inner] = token_array[inner + 1];
-                        token_array[inner + 1] = temp;
+                        Token *temp                     = token_array[inner];
+                        token_array[inner]              = token_array[inner + 1];
+                        token_array[inner + 1]          = temp;
+                        identical_up_to_smallest_length = 0;
                         break;
                     } else if (token_array[inner]->name[current_letter] < token_array[inner+1]->name[current_letter]) {
+                        identical_up_to_smallest_length = 0;
                         break;
+                    }
+                }
+
+                if (identical_up_to_smallest_length) {
+                    if (token_array[inner]->name_length > token_array[inner+1]->name_length) {
+                        Token *temp                     = token_array[inner];
+                        token_array[inner]              = token_array[inner + 1];
+                        token_array[inner + 1]          = temp;
                     }
                 }
             }
