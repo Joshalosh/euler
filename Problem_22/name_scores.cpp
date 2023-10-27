@@ -83,7 +83,7 @@ static void EatWhitespaceAndComments(Tokeniser *tokeniser)
     tokeniser->at = stream;
 }
 
-static int AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
+static int AddTokensToArrayAndGetCount(Tokeniser *tokeniser, Token **token_array)
 {
     int index = 0;
     while(tokeniser->at[0])
@@ -108,15 +108,8 @@ static int AddTokenToArray(Tokeniser *tokeniser, Token **token_array)
             }
         }
     }
-
     return index;
 }
-
-#if 1
-#define MAX_ARRAY_ENTRIES 5200
-#else
-#define MAX_ARRAY_ENTRIES 15
-#endif
 
 #if 1
 static void BubbleSortArray(Token **token_array, int token_count)
@@ -124,8 +117,8 @@ static void BubbleSortArray(Token **token_array, int token_count)
     for (int outer = 0; outer < token_count - 1; outer++) {
         for (int inner = 0; inner < token_count - outer - 1; inner++) {
             if (token_array[inner]->name[0] > token_array[inner + 1]->name[0]) {
-                Token *temp = token_array[inner];
-                token_array[inner] = token_array[inner + 1];
+                Token *temp            = token_array[inner];
+                token_array[inner]     = token_array[inner + 1];
                 token_array[inner + 1] = temp;
             } else if (token_array[inner]->name[0] == token_array[inner + 1]->name[0]) {
                 size_t smallest_length = token_array[inner]->name_length < token_array[inner + 1]->name_length ? token_array[inner]->name_length : token_array[inner + 1]->name_length;
@@ -186,9 +179,7 @@ int main()
 
     Token *token_array[5200];
 
-    long long token_count = AddTokenToArray(&tokeniser, token_array);
-    //token_count = 15;
-    //printf("Total tokens: %d\n", token_count);
+    long long token_count = AddTokensToArrayAndGetCount(&tokeniser, token_array);
     BubbleSortArray(token_array, token_count);
 
     int total_score = 0;
