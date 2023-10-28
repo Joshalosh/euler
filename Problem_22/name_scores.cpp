@@ -6,6 +6,8 @@
 
 #include "name_scores.h"
 
+#define ASSERT(expression) if(!(expression)) {*(int *)0 = 0;}
+
 static File_Content ReadEntireFileAndNullTerminate(char *filename) 
 {
     FILE *file = fopen(filename, "r");
@@ -160,7 +162,110 @@ static void BubbleSortArray(Token **token_array, int token_count)
         }
     }
 }
+#endif
 
+static void MergeSort(Token **first, Token **temp_array, int count) {
+    if (count <= 1) {
+        return;  // Array of size 1 or 0 is always sorted.
+    } else if (count == 2) {
+        if (strcmp(first[0]->name, first[1]->name) > 0) {
+            Token *temp = first[0];
+            first[0] = first[1];
+            first[1] = temp;
+        }
+        return;
+    }
+    
+    int half_0_count = count / 2;
+    int half_1_count = count - half_0_count;
+
+    Token **in_half_0 = first;
+    Token **in_half_1 = first + half_0_count;
+
+    MergeSort(in_half_0, temp_array, half_0_count);
+    MergeSort(in_half_1, temp_array, half_1_count);
+
+    Token **read_half_0 = in_half_0;
+    Token **read_half_1 = in_half_1;
+    Token **end_half_0 = in_half_1;
+    Token **end = first + count;
+    Token **out = temp_array;
+
+    while (read_half_0 < end_half_0 && read_half_1 < end) {
+        if (strcmp((*read_half_0)->name, (*read_half_1)->name) < 0) {
+            *out++ = *read_half_0++;
+        } else {
+            *out++ = *read_half_1++;
+        }
+    }
+
+    // Copy any remaining items from the halves, if any.
+    while (read_half_0 < end_half_0) {
+        *out++ = *read_half_0++;
+    }
+    while (read_half_1 < end) {
+        *out++ = *read_half_1++;
+    }
+
+    // Copy the merged items back to the original array.
+    for (int i = 0; i < count; i++) {
+        first[i] = temp_array[i];
+    }
+}
+
+#if 0
+static void MergeSort(Token **first, Token **temp_array, int count)
+{
+    if (count == 1) {
+        // NOTE: Do nothing
+    }
+    else if (count == 2) {
+        Token **entry_a  = first;
+        Token **entry_b  = first + 1;
+        if (strcmp((*entry_a)->name, (*entry_b)->name) > 0) {
+            Token *temp   = *entry_a;
+            *entry_a      = *entry_b;
+            *entry_b      = temp;
+        }
+    } else {
+        
+        int half_0_count = count / 2;
+        int half_1_count = count - half_0_count;
+
+        ASSERT(half_0_count >= 1);
+        ASSERT(half_1_count >= 1);
+
+        Token **in_half_0   = first;
+        Token **in_half_1   = first + half_0_count;
+        Token **end         = first + count;
+
+        MergeSort(in_half_0, temp_array, half_0_count);
+        MergeSort(in_half_1, temp_array, half_1_count);
+
+        Token **read_half_0 = in_half_0;
+        Token **read_half_1 = in_half_1;
+
+        Token **out = temp_array;
+        for (int index = 0; index < count; index++) {
+            if (read_half_0 == in_half_1) {
+                **out++ = **read_half_1++;
+            } else if (read_half_1 == end) {
+                **out++ = **read_half_0++;
+            } else if (strcmp((*read_half_0)->name, (*read_half_1)->name) < 0) {
+                **out++ = **read_half_0++;
+            } else {
+                **out++ = **read_half_1++;
+            }
+        }
+        ASSERT(out == (temp_array + count));
+        ASSERT(read_half_0 == in_half_1);
+        ASSERT(read_half_1 == end);
+
+        for (int index = 0; index < count; index++) {
+            first[index] = temp_array[index];
+        }
+    }
+}
 #endif
 
 static void FreeTokens(Token **token_array, int token_count)
@@ -178,9 +283,11 @@ int main()
     tokeniser.at = file.data;
 
     Token *token_array[5200];
+    Token *temp_array[5200];
 
     long long token_count = AddTokensToArrayAndGetCount(&tokeniser, token_array);
-    BubbleSortArray(token_array, token_count);
+    //BubbleSortArray(token_array, token_count);
+    MergeSort(token_array, temp_array, token_count);
 
     int total_score = 0;
     for(int i = 0; i < token_count; i++) {
