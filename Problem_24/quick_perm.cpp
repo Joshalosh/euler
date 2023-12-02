@@ -40,6 +40,7 @@ static void FindSpecificPermutation(u32 number, u32 digits[], u32 size) {
         for (u32 j = index; j < size - 1; j++) {
             digits[j] = digits[j + 1];
         }
+
     }
 
     printf("\n");
