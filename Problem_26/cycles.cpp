@@ -23,8 +23,7 @@ void PrintBinary(u32 num) {
 }
 
 s32 FindRecurringCycleLength(s32 d) {
-    s32 remainders[1000]; // Array to store remainders
-    memset(remainders, 0, sizeof(remainders));
+    s32 remainders[1000] = {}; // Array to store remainders
 
     s32 remainder = 1;
     s32 position  = 0;
