@@ -16,6 +16,49 @@ typedef float       f32;
 typedef double      f64;
 typedef long double f128;
 
+void PrintBinary(u32 num) {
+    for (int i = 23; i >= 0; i--) {
+        printf("%d", (num >> i) & 1);
+    }
+}
+
+s32 FindRecurringCycleLength(s32 d) {
+    s32 remainders[1000]; // Array to store remainders
+    memset(remainders, 0, sizeof(remainders));
+
+    s32 remainder = 1;
+    s32 position  = 0;
+
+    while (remainder != 0 && remainders[remainder] == 0) {
+        remainders[remainder] = position;
+        remainder = remainder * 10 % d;
+        position++;
+    }
+
+    if (remainder == 0) { // No cycle found, decimal terminates
+        return 0;
+    }
+
+    return position - remainder[remainders]; // NOTE: Length of the cycle
+}
+
+int main() {
+    s32 longest = 0;
+    s32 best_d = 0;
+
+    for (int d = 2; d <= 1000; d++) {
+        s32 length = FindRecurringCycleLength(d);
+        if (length > longest) {
+            longest = length;
+            best_d = d;
+        }
+    }
+
+    printf("The value of d < 1000 with the longest recurring cycle is %d with a cycle length of %d.\n", best_d, longest);
+}
+
+
+#if 0
 int main() {
 #if 0
     f32 num = 1;
@@ -55,4 +98,8 @@ int main() {
     }
 
     printf("Mantissa (with implicit '1' if normalized): %u (as integer)\n", mantissa);
+
+    PrintBinary(mantissa);
+    printf("\n");
 }
+#endif
